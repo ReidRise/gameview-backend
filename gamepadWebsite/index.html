@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+  <body style="margin:0;background:#000;">
+    <canvas id="video" width="1280" height="720"></canvas>
+    <script>
+      const canvas = document.getElementById('video');
+      const ctx = canvas.getContext('2d');
+      const ws = new WebSocket("ws://localhost:9090/stream");
+      let img = new Image();
+
+      ws.binaryType = "arraybuffer";
+      ws.onmessage = (event) => {
+        const blob = new Blob([event.data], { type: "image/jpeg" });
+        const url = URL.createObjectURL(blob);
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0);
+          URL.revokeObjectURL(url);
+        };
+        img.src = url;
+      };
+
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      };
+
+      const dpadMap = new Map();
+      dpadMap.set(0x1, 0x0)
+      dpadMap.set(0x9, 0x1)
+      dpadMap.set(0x8, 0x2)
+      dpadMap.set(0xa, 0x3)
+      dpadMap.set(0x2, 0x4)
+      dpadMap.set(0x6, 0x5)
+      dpadMap.set(0x4, 0x6)
+      dpadMap.set(0x5, 0x7)
+      dpadMap.set(0x0, 0xf)
+
+
+      function packBools(arr) {
+        let num = 0;
+        for (let i = 0; i < arr.length; i++) {
+          if (arr[i]) num |= 1 << i;
+        }
+        return num;
+      }
+
+      function axesToBytes(axes) {
+        let bytes = [];
+        for (let i = 0; i < axes.length; i++) {
+          if (axes[i] + 1 == 0)
+            bytes.push(0)
+          else
+            bytes.push(Math.ceil((axes[i] + 1) * 128) -1)
+        }
+        return bytes;
+      }
+
+      const gamepadSocket = new WebSocket("ws://localhost:9090/gamepad");
+      let gamepadIndex = null;
+
+      window.addEventListener("gamepadconnected", (e) => {
+        console.log("Gamepad connected:", e.gamepad);
+        gamepadIndex = e.gamepad.index;
+      });
+
+      window.addEventListener("gamepaddisconnected", () => {
+        console.log("Gamepad disconnected");
+        gamepadIndex = null;
+      });
+
+      function update() {
+        if (gamepadIndex !== null) {
+          var hidReport = [0x3]
+          const gp = navigator.getGamepads()[gamepadIndex];
+
+          const buttons = gp.buttons.map(btn => btn.pressed);
+          const dpadVal = dpadMap.get(packBools(buttons.slice(12, 16)))
+
+          const axes = gp.axes.map(axis => axis);
+
+
+          hidReport.push(dpadVal)
+          hidReport.push(...axesToBytes(axes))
+          hidReport.push(0x0)
+          hidReport.push(0x0)
+          hidReport.push(0x0)
+          hidReport.push(0x64)
+          console.log(JSON.stringify(hidReport))
+          gamepadSocket.send(JSON.stringify(hidReport));
+
+        }
+        requestAnimationFrame(update);
+      }
+      requestAnimationFrame(update);
+    </script>
+  </body>
+</html>
