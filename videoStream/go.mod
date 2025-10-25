@@ -1,4 +1,4 @@
-module github.com/vladimirvivien/go4vl/simplecam
+module main
 
 go 1.24.0
 
