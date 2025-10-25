@@ -80,12 +80,16 @@ func gamepadHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	port := ":9090"
 	devName := "/dev/video0"
+	width := 1280
+	hight := 720
 	flag.StringVar(&devName, "d", devName, "device name (path)")
 	flag.StringVar(&port, "p", port, "webcam service port")
+	flag.IntVar(&width, "w", width, "Width of virual display")
+	flag.IntVar(&width, "h", hight, "Width of virual display")
 
 	camera, err := device.Open(
 		devName,
-		device.WithPixFormat(v4l2.PixFormat{PixelFormat: v4l2.PixelFmtMJPEG, Width: 1280, Height: 720}),
+		device.WithPixFormat(v4l2.PixFormat{PixelFormat: v4l2.PixelFmtMJPEG, Width: uint32(width), Height: uint32(hight)}),
 	)
 	if err != nil {
 		log.Fatalf("failed to open device: %s", err)
@@ -97,7 +101,6 @@ func main() {
 	}
 
 	frames = camera.GetOutput()
-
 	log.Printf("Handling Gamepad\n")
 	http.HandleFunc("/gamepad", gamepadHandler)
 

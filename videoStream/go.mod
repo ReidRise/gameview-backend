@@ -1,8 +1,6 @@
 module main
 
-go 1.24.0
-
-toolchain go1.24.9
+go 1.25
 
 require github.com/vladimirvivien/go4vl v0.0.5
 

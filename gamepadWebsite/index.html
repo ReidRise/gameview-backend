@@ -5,7 +5,7 @@
     <script>
       const canvas = document.getElementById('video');
       const ctx = canvas.getContext('2d');
-      const ws = new WebSocket("ws://localhost:9090/stream");
+      const ws = new WebSocket("ws://192.168.0.31:9090/stream");
       let img = new Image();
 
       ws.binaryType = "arraybuffer";
@@ -74,14 +74,15 @@
 
           const buttons = gp.buttons.map(btn => btn.pressed);
           const dpadVal = dpadMap.get(packBools(buttons.slice(12, 16)))
-
+          const actionButtons = packBools([buttons[0], buttons[1], false, buttons[3], buttons[2], false, buttons[4], buttons[5]])
+          const specialButtons = packBools([buttons[6], buttons[7], button[8], buttons[9], buttons[16], buttons[10], buttons[11]])
           const axes = gp.axes.map(axis => axis);
 
 
           hidReport.push(dpadVal)
           hidReport.push(...axesToBytes(axes))
-          hidReport.push(0x0)
-          hidReport.push(0x0)
+          hidReport.push(actionButtons)
+          hidReport.push(specialButtons)
           hidReport.push(0x0)
           hidReport.push(0x64)
           console.log(JSON.stringify(hidReport))
