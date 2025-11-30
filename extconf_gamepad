@@ -1,0 +1,5 @@
+label Radxa Rock 3C Linux
+  kernel /boot/Image
+  devicetree /boot/rk3566-rock-3c.dtb
+  fdtoverlays  /boot/rk3568-dwc3-peripheral.dtbo
+  append root=/dev/mmcblk1p1 rw rootfstype=ext4 earlycon rootwait

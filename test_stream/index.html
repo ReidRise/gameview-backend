@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<body>
+<video id="v" autoplay playsinline></video>
+
+<script>
+async function start() {
+  const pc = new RTCPeerConnection({
+    sdpSemantics: "unified-plan"
+  });
+
+  // 🔑 REQUIRED for Firefox (and stable on Chrome)
+  pc.addTransceiver("video", { direction: "recvonly" });
+
+  pc.ontrack = (e) => {
+    document.getElementById("v").srcObject = e.streams[0];
+  };
+
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+
+  const res = await fetch("127.0.0.1:9090/offer", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(offer)
+  });
+
+  const answer = await res.json();
+  await pc.setRemoteDescription(answer);
+}
+
+start();
+</script>
+</body>
+</html>

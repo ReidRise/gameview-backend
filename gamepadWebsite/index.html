@@ -5,7 +5,7 @@
     <script>
       const canvas = document.getElementById('video');
       const ctx = canvas.getContext('2d');
-      const ws = new WebSocket("ws://192.168.0.31:9090/stream");
+      const ws = new WebSocket("ws://localhost:9090/stream");
       let img = new Image();
 
       ws.binaryType = "arraybuffer";

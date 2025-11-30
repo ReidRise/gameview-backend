@@ -106,5 +106,8 @@ func main() {
 
 	log.Printf("Serving images: [%s/stream]\n", port)
 	http.HandleFunc("/stream", imageServ)
+
+	//http.Handle("/", http.FileServer(http.Dir(".")))
+
 	log.Fatal(http.ListenAndServe(port, nil))
 }
